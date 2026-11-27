@@ -557,7 +557,7 @@ describe('runCli', {concurrent: false}, () => {
     expect(broker.getRecentCandles).toHaveBeenCalledWith(PAIR, 120, 86_400_000);
     expect(result).toHaveProperty('json');
     if ('json' in result) {
-      expect(result.json).toMatchObject({health: 100, timeframe: '1d', verdict: 'noise'});
+      expect(result.json).toMatchObject({score: {outOf: 100, value: 100}, timeframe: '1d', verdict: 'noise'});
     }
   });
 
@@ -606,31 +606,35 @@ describe('runCli', {concurrent: false}, () => {
     }
   );
 
-  it('leaves relative strength unread until a benchmark is named', async () => {
+  it('reads the instrument against the market without being asked', async () => {
     const {broker, run} = setup();
     /*
      * The instrument creeps up in a zigzag rather than a straight line, so that every other check
-     * has both up and down bars to read and relative strength is the only unanswered one.
+     * has both up and down bars to read and relative strength is the only one in question.
      */
     broker.getRecentCandles.mockImplementation(async pair =>
       dailySeries(pair.base, index =>
-        pair.base === 'SPY' ? 400 + index * 2 : 100 + index * 0.2 + (index % 2 === 0 ? 0 : 0.5)
+        pair.base === 'AAPL' ? 100 + index * 0.2 + (index % 2 === 0 ? 0 : 0.5) : 400 + index * 2
       )
     );
 
-    const alone = await run(['health', 'AAPL']);
-    const compared = await run(['health', 'AAPL', '--benchmark', 'SPY']);
+    const unasked = await run(['health', 'AAPL']);
+    await run(['health', 'AAPL', '--benchmark', 'QQQ']);
 
-    expect(broker.getRecentCandles).toHaveBeenCalledWith(new TradingPair('SPY', 'USD'), 120, 86_400_000);
-    if ('json' in alone && 'json' in compared) {
-      expect(alone.json, 'the check that needs a second series has nothing to read').toMatchObject({
-        health: 90,
-        unreadWeight: 15,
-      });
+    expect(
+      broker.getRecentCandles,
+      'the one check that says whether a fall belongs to the market cannot be the one nobody turns on'
+    ).toHaveBeenCalledWith(new TradingPair('SPY', 'USD'), 120, 86_400_000);
+    expect(broker.getRecentCandles, 'a sector proxy still replaces the broad index').toHaveBeenCalledWith(
+      new TradingPair('QQQ', 'USD'),
+      120,
+      86_400_000
+    );
+    if ('json' in unasked) {
       expect(
-        compared.json,
-        'a stock creeping up while its index runs is losing ground, which costs it the full 15 points'
-      ).toMatchObject({health: 75, unreadWeight: 0});
+        unasked.json,
+        'a stock creeping up while the market runs is losing ground, which costs it the full 15 points'
+      ).toMatchObject({score: {value: 75}});
     }
   });
 

@@ -3,7 +3,7 @@ import {OrderSide, TradingPair, getFilledBaseAmount} from '@typedtrader/exchange
 import {classifyAtrMultiple} from 'trading-strategies';
 import {planStop, previewDistance, readTrueRange} from './cliStop.js';
 import {BROKERS, createCliBroker} from './cliBroker.js';
-import {formatHealthReport, scoreChartHealth} from './cliHealth.js';
+import {formatHealthReport, readChart} from './cliHealth.js';
 import {placeCliOrder, waitForOrder} from './cliOrders.js';
 import {runSmokeChecks} from './cliSmoke.js';
 import {parseCliArgs} from './parseCliArgs.js';
@@ -94,11 +94,24 @@ export async function runCli(argv: string[], overrides: Partial<CliDeps> = {}): 
       case 'candles':
         return {json: await broker.getRecentCandles(pair, count, interval)};
       case 'health': {
-        const report = await scoreChartHealth(broker, pair, {
+        const chart = await readChart(broker, pair, {
           asOf: values.date,
           benchmark: values.benchmark === undefined ? undefined : new TradingPair(values.benchmark, counter),
           count,
         });
+
+        /*
+         * Two cards off one window: the weakness card says what is wrong with the chart, and the
+         * opportunity card says whether a fall belongs to the market rather than to the instrument.
+         * The second question cannot be answered by the first, because every answer it has is a
+         * deduction.
+         */
+        if (values.opportunity) {
+          return {json: chart.getOpportunityCard()};
+        }
+
+        const report = chart.getReportOrThrow();
+
         return values.table ? {text: formatHealthReport(pair.base, report)} : {json: report};
       }
       case 'rules':

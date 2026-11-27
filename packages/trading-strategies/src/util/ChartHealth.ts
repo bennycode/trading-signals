@@ -1,8 +1,15 @@
 import {ms, type StringValue} from 'ms';
 import {CandleBatcher, type BatchedCandle, type Candle} from '@typedtrader/exchange';
-import {ATR, NotEnoughDataError, OBV, pushUpdate, RSI, SMA} from 'trading-signals';
+import {ATR, NotEnoughDataError, OBV, getPercentageChange, pushUpdate, RSI, SMA} from 'trading-signals';
 import {CHECKS, FULL_HEALTH, classifyChartHealth, soleCategory, type HealthReport} from './chartHealthChecks.js';
 import {readChecks, type Bar, type CheckPeriods} from './chartHealthReadings.js';
+import {
+  classifyOpportunity,
+  OPPORTUNITY_FIELDS,
+  readOpportunity,
+  scoreOpportunity,
+  type OpportunityCard,
+} from './chartOpportunity.js';
 
 export type ChartHealthOptions = {
   fastAveragePeriod?: number;
@@ -57,7 +64,7 @@ type Part = {
  *
  * Relative strength needs a second price series, so it is only read when {@link ChartHealth.add}
  * is given a benchmark candle for the same bar. Without one that check stays unread and the score
- * is optimistic by its weight, which {@link HealthReport.unreadWeight} states.
+ * is optimistic by its weight, which {@link unreadWeight} totals from the card.
  *
  * Earnings misses, guidance cuts, insider selling, dividend cuts and short interest are not in the
  * bars at all; treat any of them as a reason to read the verdict one band worse.
@@ -176,7 +183,7 @@ export class ChartHealth {
     }
 
     const readings = readChecks({latest, oldest, periods: this.#periods, window: this.#window});
-    const checks = CHECKS.map(entry => ({
+    const criteria = CHECKS.map(entry => ({
       category: entry.category,
       fired: readings[entry.name].fired,
       measures: readings[entry.name].measures,
@@ -184,17 +191,52 @@ export class ChartHealth {
       question: entry.question,
       weight: entry.weight,
     }));
-    const deducted = checks.reduce((sum, check) => (check.fired === true ? sum + check.weight : sum), 0);
+    const deducted = criteria.reduce((sum, check) => (check.fired === true ? sum + check.weight : sum), 0);
     const health = Math.max(0, FULL_HEALTH - deducted);
 
     return {
       asOf: latest.openTimeInISO,
-      checks,
-      health,
-      soleCategory: soleCategory(checks),
+      criteria,
+      firedMeans: 'weakness',
+      score: {kind: 'ratio', outOf: FULL_HEALTH, value: health},
+      soleCategory: soleCategory(criteria),
       timeframe: this.#timeframe,
-      unreadWeight: checks.reduce((sum, check) => (check.fired === null ? sum + check.weight : sum), 0),
       verdict: classifyChartHealth(health),
+    };
+  }
+
+  /**
+   * The opportunity card, read off the same window as the health card so the two cannot disagree
+   * about what the instrument did. It asks whether a fall belongs to the market rather than to the
+   * instrument, which the health card cannot answer because every answer it has is a deduction.
+   */
+  getOpportunityCard(): OpportunityCard | null {
+    const latest = this.#window.at(-1);
+    const oldest = this.#window.at(0);
+
+    if (!this.isReady || !latest || !oldest) {
+      return null;
+    }
+
+    const readings = readOpportunity({latest, oldest, periods: this.#periods, window: this.#window});
+    const criteria = OPPORTUNITY_FIELDS.map(field => ({
+      category: field.category,
+      fired: readings[field.name].fired,
+      measures: readings[field.name].measures,
+      name: field.name,
+      question: field.question,
+      weight: field.weight,
+    }));
+    const score = scoreOpportunity(criteria);
+    const returnPercent = getPercentageChange(oldest.close, latest.close);
+
+    return {
+      asOf: latest.openTimeInISO,
+      criteria,
+      firedMeans: 'strength',
+      returnPercent,
+      score,
+      verdict: classifyOpportunity(score, returnPercent),
     };
   }
 

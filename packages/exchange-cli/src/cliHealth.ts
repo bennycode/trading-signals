@@ -1,6 +1,7 @@
 import {ms} from 'ms';
 import {z} from 'zod';
 import {getCandlesUntil, type Candle, type CandleFeed, type TradingPair} from '@typedtrader/exchange';
+import {formatScore, unreadWeight} from '@typedtrader/scorecard';
 import {ChartHealth, type HealthReport, type WeaknessMeasure} from 'trading-strategies';
 
 /**
@@ -10,6 +11,15 @@ import {ChartHealth, type HealthReport, type WeaknessMeasure} from 'trading-stra
  * those periods, so the CLI does not offer one.
  */
 const TIMEFRAME = '1d';
+
+/*
+ * The relative-strength check is the only one that needs a second series, and it is the one that
+ * answers whether a fall belongs to the instrument or to the market. Left opt-in it was never read,
+ * so every card came back flattered by its weight. A broad US index is the default because that is
+ * what the rest of the card's conventions assume; an instrument on another exchange shares almost
+ * no session opens with it and degrades to the unread answer it already gave.
+ */
+export const DEFAULT_BENCHMARK = 'SPY';
 
 /**
  * A day a card can be read as of, checked rather than trusted: `2026-02-31` has the right shape and
@@ -47,11 +57,11 @@ export interface HealthRequest {
  * because a halt or a late open leaves one of the two feeds a bar short and scoring a stock against
  * the wrong day of its index would be worse than not scoring it at all.
  */
-export async function scoreChartHealth(
+export async function readChart(
   broker: Pick<CandleFeed, 'getCandles' | 'getRecentCandles'>,
   pair: TradingPair,
   {asOf, benchmark, count}: HealthRequest
-): Promise<HealthReport> {
+): Promise<ChartHealth> {
   const intervalInMillis = ms(TIMEFRAME);
   // The whole of the requested day, so the bar opening within it is the last one on the card.
   const cutoffInMillis = asOf === undefined ? undefined : Date.parse(`${asOf}T23:59:59.999Z`);
@@ -90,15 +100,13 @@ export async function scoreChartHealth(
     card.add(candle, benchmarkByOpenTime.get(candle.openTimeInMillis));
   }
 
-  const report = card.getReport();
-
-  if (!report) {
+  if (!card.getReport()) {
     throw new Error(
       `Scoring ${pair.base}${asOf === undefined ? '' : ` as of ${asOf}`} needs at least ${card.getRequiredBars()} daily candles, but ${candles.length} arrived. Raise --count.`
     );
   }
 
-  return report;
+  return card;
 }
 
 /** Thousands separators and a fixed scale, so a volume and a price line up under each other. */
@@ -149,17 +157,18 @@ function measureRow({deviationPercent, indicator, label, limit, reading}: Weakne
  * and is blank where a percentage would be meaningless, as against a zero line.
  */
 export function formatHealthReport(ticker: string, report: HealthReport): string {
+  const unread = unreadWeight(report.criteria);
   const lines = [
-    `${ticker}  ${report.health}/100  ${report.verdict}`,
+    `${ticker}  ${formatScore(report.score)}  ${report.verdict}`,
     // The card is daily, so the calendar day is the whole of what its timestamp says.
     `as of ${report.asOf.slice(0, 10)} on ${report.timeframe} bars` +
-      (report.unreadWeight === 0 ? '' : `, ${report.unreadWeight} points unread`) +
+      (unread === 0 ? '' : `, ${unread} points unread`) +
       (report.soleCategory === null ? '' : `, resting on ${report.soleCategory} alone`),
     '',
     headerRow(),
   ];
 
-  for (const check of report.checks) {
+  for (const check of report.criteria) {
     const verdict = check.fired === null ? 'n/a' : check.fired ? 'YES' : 'no';
     const cost = check.fired === true ? `-${check.weight}` : '';
 

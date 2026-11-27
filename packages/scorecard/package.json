@@ -1,0 +1,45 @@
+{
+  "name": "@typedtrader/scorecard",
+  "version": "0.1.0",
+  "description": "The shape of a score card: a score with its scale, the fields that produced it, and the measurements behind each field.",
+  "keywords": [
+    "scorecard",
+    "trading",
+    "typedtrader"
+  ],
+  "homepage": "https://bennycode.com/trading-signals",
+  "bugs": {
+    "url": "https://github.com/bennycode/trading-signals/issues"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bennycode/trading-signals.git",
+    "directory": "packages/scorecard"
+  },
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "types": "dist/src/index.d.ts",
+  "exports": {
+    ".": "./dist/src/index.js"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "clean": "rimraf coverage dist",
+    "dist": "npm run clean && npm run build",
+    "fix": "npm run fix:code && npm run fix:other",
+    "fix:code": "oxlint . --fix || true",
+    "fix:other": "oxfmt",
+    "lint": "npm run lint:code && npm run lint:other",
+    "lint:code": "oxlint .",
+    "lint:other": "oxfmt --list-different",
+    "test": "npm run test:types && npm run test:units",
+    "test:types": "tsc --noEmit",
+    "test:units": "vitest run"
+  }
+}
