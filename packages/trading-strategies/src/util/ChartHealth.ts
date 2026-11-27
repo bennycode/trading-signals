@@ -236,7 +236,7 @@ export class ChartHealth {
       firedMeans: 'strength',
       returnPercent,
       score,
-      verdict: classifyOpportunity(score.value, returnPercent <= 0),
+      verdict: classifyOpportunity(score.value, returnPercent),
     };
   }
 

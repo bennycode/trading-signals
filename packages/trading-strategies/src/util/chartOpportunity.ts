@@ -22,7 +22,8 @@ export type OpportunityField = Criterion<OpportunityFieldName, OpportunityCatego
 
 /**
  * `noDip` keeps the card from being read as a quality score: an instrument that did not fall has no
- * dip to buy, whatever the other fields say about it.
+ * dip to buy, whatever the other fields say about it. Holding flat through a market that fell is
+ * strength rather than a dip, so it lands here too.
  */
 export type OpportunityVerdict = 'breakdown' | 'dip' | 'mixed' | 'noDip';
 
@@ -35,12 +36,12 @@ export type OpportunityCard = ScoreCard<OpportunityField, OpportunityVerdict> & 
 export const FULL_OPPORTUNITY = 100;
 
 /**
- * How far an instrument may lag its benchmark and still count as having fallen with it, in
- * percentage points. Without a tolerance the field is a knife edge: a name that fell within four
- * hundredths of a point of its index read as falling on its own, which is not a distinction anyone
- * would make looking at the two charts.
+ * A move smaller than this many percentage points is noise, both in an instrument's own return and
+ * in its return measured against its benchmark. Without it every comparison is a knife edge: a name
+ * that fell within four hundredths of a point of its index read as falling on its own, and a name
+ * that gave up a single point while its market gave up seven read as having fallen at all.
  */
-export const MARKET_FALL_TOLERANCE_IN_PERCENT = 2;
+export const RETURN_NOISE_IN_PERCENT = 2;
 
 /** At or above this the fall reads as a dip; below the lower edge it reads as a breakdown. */
 export const OPPORTUNITY_BANDS = {
@@ -89,8 +90,8 @@ export const OPPORTUNITY_FIELDS = [
   weight: number;
 }[];
 
-export function classifyOpportunity(score: number, fell: boolean): OpportunityVerdict {
-  if (!fell) {
+export function classifyOpportunity(score: number, returnPercent: number): OpportunityVerdict {
+  if (returnPercent > -RETURN_NOISE_IN_PERCENT) {
     return 'noDip';
   }
 
@@ -150,19 +151,24 @@ export function readOpportunity({
      * An instrument that gave up no ground fell because its market did. The excess is what carries
      * the answer: a fall of any depth matched by the benchmark leaves it near zero, while the same
      * fall against a market that held leaves it deeply negative.
+     *
+     * The question presupposes a fall, so a name that barely moved cannot answer it. Without that
+     * floor an instrument that held flat through a falling market collects the heaviest field on the
+     * card, which reads its resilience as an invitation to buy.
      */
     fellWithMarket:
       benchmarkReturn === null
         ? UNREAD
         : {
-            fired: ownReturn <= 0 && ownReturn - benchmarkReturn >= -MARKET_FALL_TOLERANCE_IN_PERCENT,
+            fired: ownReturn <= -RETURN_NOISE_IN_PERCENT && ownReturn - benchmarkReturn >= -RETURN_NOISE_IN_PERCENT,
             measures: [
               measure('Price', 'return vs benchmark return', ownReturn, benchmarkReturn),
+              measure('Price', 'own return vs noise floor', ownReturn, -RETURN_NOISE_IN_PERCENT),
               measure(
                 'Relative',
-                'excess return vs tolerance',
+                'excess return vs noise floor',
                 ownReturn - benchmarkReturn,
-                -MARKET_FALL_TOLERANCE_IN_PERCENT
+                -RETURN_NOISE_IN_PERCENT
               ),
             ],
           },

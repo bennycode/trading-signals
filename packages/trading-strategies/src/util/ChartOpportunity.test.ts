@@ -2,7 +2,7 @@ import {describe, expect, it} from 'vitest';
 import {unreadWeight} from '@typedtrader/scorecard';
 import type {Candle} from '@typedtrader/exchange';
 import {ChartHealth} from './ChartHealth.js';
-import {MARKET_FALL_TOLERANCE_IN_PERCENT, OPPORTUNITY_FIELDS, type OpportunityFieldName} from './chartOpportunity.js';
+import {OPPORTUNITY_FIELDS, RETURN_NOISE_IN_PERCENT, type OpportunityFieldName} from './chartOpportunity.js';
 
 const DAY_IN_MILLIS = 86_400_000;
 const STEADY_VOLUME = 1_000_000;
@@ -72,14 +72,32 @@ describe('ChartHealth opportunity card', () => {
     const card = cardFor(dailyCandles(justBehind), dailyCandles(market));
     const excess = card.criteria
       .find(field => field.name === 'fellWithMarket')
-      ?.measures.find(entry => entry.label === 'excess return vs tolerance')?.reading;
+      ?.measures.find(entry => entry.label === 'excess return vs noise floor')?.reading;
 
     expect(excess).toBeLessThan(0);
-    expect(excess).toBeGreaterThan(-MARKET_FALL_TOLERANCE_IN_PERCENT);
+    expect(excess).toBeGreaterThan(-RETURN_NOISE_IN_PERCENT);
     expect(
       card.criteria.find(field => field.name === 'fellWithMarket')?.fired,
       'a knife edge at exactly zero would answer this the same way as a fall nobody else took'
     ).toBe(true);
+  });
+
+  it('refuses to call a name that held flat through a falling market a dip', () => {
+    const market = falling;
+    /*
+     * Moderna in November 2026: down a single point while the index gave up seven, which is what
+     * moved it up the momentum ranking rather than into the bargain bin.
+     */
+    const heldFlat = Array.from({length: market.length}, (_, index) => 200 - index * 0.004);
+    const card = cardFor(dailyCandles(heldFlat), dailyCandles(market));
+
+    expect(card.returnPercent).toBeLessThan(0);
+    expect(card.returnPercent).toBeGreaterThan(-RETURN_NOISE_IN_PERCENT);
+    expect(
+      firedNames(card.criteria),
+      'a question about whose fall it was cannot be answered by a name that did not fall'
+    ).not.toContain('fellWithMarket');
+    expect(card.verdict, 'holding flat through a market that fell is strength, not a dip').toBe('noDip');
   });
 
   it('refuses to call a rising instrument a dip, however well it reads otherwise', () => {
