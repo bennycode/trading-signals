@@ -80,7 +80,12 @@ export type ScoreCard<Criteria extends Criterion = Criterion, Verdict extends st
    * as good or bad news, and the two kinds of card would need two renderers.
    */
   firedMeans: 'strength' | 'weakness';
-  score: Score;
+  /**
+   * `null` when the card's questions did not apply to the instrument at all, which is not the same
+   * as scoring zero: zero is a verdict, and a reader may rank it against another zero. A card with
+   * no score must be left out of a ranking rather than placed at the bottom of one.
+   */
+  score: Score | null;
   verdict: Verdict;
 };
 

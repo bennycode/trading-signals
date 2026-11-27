@@ -90,16 +90,16 @@ export const OPPORTUNITY_FIELDS = [
   weight: number;
 }[];
 
-export function classifyOpportunity(score: number, returnPercent: number): OpportunityVerdict {
-  if (returnPercent > -RETURN_NOISE_IN_PERCENT) {
+export function classifyOpportunity(score: Score | null, returnPercent: number): OpportunityVerdict {
+  if (score === null || returnPercent > -RETURN_NOISE_IN_PERCENT) {
     return 'noDip';
   }
 
-  if (score >= OPPORTUNITY_BANDS.dipAtOrAbove) {
+  if (score.value >= OPPORTUNITY_BANDS.dipAtOrAbove) {
     return 'dip';
   }
 
-  return score < OPPORTUNITY_BANDS.breakdownBelow ? 'breakdown' : 'mixed';
+  return score.value < OPPORTUNITY_BANDS.breakdownBelow ? 'breakdown' : 'mixed';
 }
 
 /**
@@ -118,6 +118,16 @@ export function readOpportunity({
   window: readonly Bar[];
 }): Record<OpportunityFieldName, Reading> {
   const ownReturn = getPercentageChange(oldest.close, latest.close);
+
+  /*
+   * Every question on the card is about a fall: whether ranges widened as it fell, whether sellers
+   * drove it, whether the market fell too. A name that did not fall answers none of them, so the
+   * card reads nothing rather than awarding the fields that happen to look tidy on a flat chart.
+   */
+  if (ownReturn > -RETURN_NOISE_IN_PERCENT) {
+    return {fellWithMarket: UNREAD, noDistribution: UNREAD, orderlyRanges: UNREAD, oversoldStretch: UNREAD};
+  }
+
   const benchmarkFirst = oldest.relative === null ? null : oldest.close / oldest.relative;
   const benchmarkLast = latest.relative === null ? null : latest.close / latest.relative;
   const benchmarkReturn =
@@ -152,18 +162,14 @@ export function readOpportunity({
      * the answer: a fall of any depth matched by the benchmark leaves it near zero, while the same
      * fall against a market that held leaves it deeply negative.
      *
-     * The question presupposes a fall, so a name that barely moved cannot answer it. Without that
-     * floor an instrument that held flat through a falling market collects the heaviest field on the
-     * card, which reads its resilience as an invitation to buy.
      */
     fellWithMarket:
       benchmarkReturn === null
         ? UNREAD
         : {
-            fired: ownReturn <= -RETURN_NOISE_IN_PERCENT && ownReturn - benchmarkReturn >= -RETURN_NOISE_IN_PERCENT,
+            fired: ownReturn - benchmarkReturn >= -RETURN_NOISE_IN_PERCENT,
             measures: [
               measure('Price', 'return vs benchmark return', ownReturn, benchmarkReturn),
-              measure('Price', 'own return vs noise floor', ownReturn, -RETURN_NOISE_IN_PERCENT),
               measure(
                 'Relative',
                 'excess return vs noise floor',
@@ -199,8 +205,16 @@ export function readOpportunity({
   };
 }
 
-/** Totals the fields that answered in the instrument's favour. */
-export function scoreOpportunity(fields: readonly OpportunityField[]): Score {
+/**
+ * Totals the fields that answered in the instrument's favour, or `null` where none of them could
+ * be read: a card with every field unread has nothing to say, and a zero in its place would rank
+ * it below the instruments whose falls the card did read.
+ */
+export function scoreOpportunity(fields: readonly OpportunityField[]): Score | null {
+  if (fields.every(field => field.fired === null)) {
+    return null;
+  }
+
   const earned = fields.reduce((sum, field) => (field.fired === true ? sum + field.weight : sum), 0);
 
   return {kind: 'ratio', outOf: FULL_OPPORTUNITY, value: earned};

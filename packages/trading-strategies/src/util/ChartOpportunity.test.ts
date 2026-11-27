@@ -59,7 +59,7 @@ describe('ChartHealth opportunity card', () => {
       firedNames(onItsOwn.criteria),
       'the same fall against a market that rose is the instrument own doing'
     ).not.toContain('fellWithMarket');
-    expect(withTheMarket.score.value).toBeGreaterThan(onItsOwn.score.value);
+    expect(withTheMarket.score?.value).toBeGreaterThan(onItsOwn.score?.value ?? 0);
   });
 
   it('does not split hairs over a name that fell within a point of its market', () => {
@@ -94,9 +94,13 @@ describe('ChartHealth opportunity card', () => {
     expect(card.returnPercent).toBeLessThan(0);
     expect(card.returnPercent).toBeGreaterThan(-RETURN_NOISE_IN_PERCENT);
     expect(
-      firedNames(card.criteria),
-      'a question about whose fall it was cannot be answered by a name that did not fall'
-    ).not.toContain('fellWithMarket');
+      unreadWeight(card.criteria),
+      'every question on the card is about a fall, so a name that did not fall answers none of them'
+    ).toBe(100);
+    expect(
+      card.score,
+      'a zero would rank it below the instruments whose falls the card did read, such as a breakdown at 25'
+    ).toBeNull();
     expect(card.verdict, 'holding flat through a market that fell is strength, not a dip').toBe('noDip');
   });
 
@@ -104,6 +108,7 @@ describe('ChartHealth opportunity card', () => {
     const card = cardFor(dailyCandles(rising), dailyCandles(rising));
 
     expect(card.returnPercent).toBeGreaterThan(0);
+    expect(card.score, 'there is no fall to rate, so the card holds no number to rate it with').toBeNull();
     expect(card.verdict, 'an instrument that did not fall has no dip to buy, whatever else is true of it').toBe(
       'noDip'
     );
@@ -113,7 +118,7 @@ describe('ChartHealth opportunity card', () => {
     const card = cardFor(dailyCandles(falling), dailyCandles(falling));
 
     expect(card.firedMeans, 'a reader cannot mark a row without knowing which way its yes points').toBe('strength');
-    expect(card.score.outOf).toBe(100);
+    expect(card.score?.outOf).toBe(100);
     expect(
       OPPORTUNITY_FIELDS.reduce((sum, field) => sum + field.weight, 0),
       'the fields are a closed budget, so a score is comparable between two instruments'

@@ -1,5 +1,5 @@
 import type {StringValue} from 'ms';
-import type {Criterion, Measurement, ScoreCard} from '@typedtrader/scorecard';
+import type {Criterion, Measurement, Score, ScoreCard} from '@typedtrader/scorecard';
 
 /*
  * What the card asks, what each answer is worth, and how a total becomes a verdict. Kept apart
@@ -37,6 +37,8 @@ export type WeaknessVerdict = 'distribution' | 'downtrend' | 'noise' | 'weakenin
  * produced it, plus the two readings a plain number cannot carry.
  */
 export type HealthReport = ScoreCard<WeaknessCheck, WeaknessVerdict> & {
+  /** Every check reads against the instrument's own chart, so there is always a score. */
+  score: Score;
   /**
    * Set when every check that fired draws on the same kind of evidence, and `null` once two or
    * more kinds agree. One category talking to itself is weaker than its total suggests.
