@@ -1,11 +1,11 @@
-import {getAverage, getMaximum, getMinimum, getPercentageChange} from 'trading-signals';
+import {getMaximum, getMinimum, getPercentageChange} from 'trading-signals';
 import {
   BEAR_RANGE_CEILING,
   BEAR_RANGE_FLOOR,
-  DISTRIBUTION_MARGIN,
   FAST_AVERAGE_BREAK_IN_ATR,
   UNREAD,
   measure,
+  readVolumeTilt,
   type Reading,
   type WeaknessCheckName,
 } from './chartHealthChecks.js';
@@ -101,6 +101,8 @@ export function readChecks({
     }
   });
 
+  const tilt = readVolumeTilt(downVolumes, upVolumes);
+
   return {
     // Range widening as price falls is what separates a breakdown from a slow drift lower.
     atrExpandingWhileFalling: {
@@ -144,18 +146,11 @@ export function readChecks({
      * compare, which a relentless decline produces.
      */
     distribution:
-      upVolumes.length === 0 || downVolumes.length === 0
+      tilt === null
         ? UNREAD
         : {
-            fired: getAverage(downVolumes) > getAverage(upVolumes) * (1 + DISTRIBUTION_MARGIN),
-            measures: [
-              measure(
-                'Volume',
-                'down bars vs up bars',
-                getAverage(downVolumes),
-                getAverage(upVolumes) * (1 + DISTRIBUTION_MARGIN)
-              ),
-            ],
+            fired: tilt.downVolume > tilt.heavyLine,
+            measures: [measure('Volume', 'down bars vs up bars', tilt.downVolume, tilt.heavyLine)],
           },
     /*
      * Compared half-window against half-window rather than by pivot detection, so a single

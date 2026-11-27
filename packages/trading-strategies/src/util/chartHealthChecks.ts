@@ -1,3 +1,4 @@
+import {getAverage} from 'trading-signals';
 import type {StringValue} from 'ms';
 import type {Criterion, Measurement, Score, ScoreCard} from '@typedtrader/scorecard';
 
@@ -176,6 +177,27 @@ export type Reading = {fired: boolean | null; measures: WeaknessMeasure[]};
 
 /** A check the window held nothing to read: it compared nothing, so it shows no numbers. */
 export const UNREAD: Reading = {fired: null, measures: []};
+
+/**
+ * The two numbers a volume tilt compares, or `null` where the window holds no bars of one kind and
+ * there is nothing to compare, which a relentless decline produces. Both cards read the tilt from
+ * here so that the line between heavy and ordinary down-bar trade is drawn once: a weakness card
+ * asking whether sellers were in control and an opportunity card asking whether they were not have
+ * to agree on where that line sits, or one of them contradicts the other on the same window.
+ */
+export function readVolumeTilt(
+  downVolumes: number[],
+  upVolumes: number[]
+): {downVolume: number; heavyLine: number} | null {
+  if (downVolumes.length === 0 || upVolumes.length === 0) {
+    return null;
+  }
+
+  return {
+    downVolume: getAverage(downVolumes),
+    heavyLine: getAverage(upVolumes) * (1 + DISTRIBUTION_MARGIN),
+  };
+}
 
 export function measure(indicator: string, label: string, reading: number, limit: number): WeaknessMeasure {
   const deviation = limit === 0 ? null : ((reading - limit) / Math.abs(limit)) * 100;

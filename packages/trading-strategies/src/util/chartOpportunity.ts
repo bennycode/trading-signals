@@ -1,6 +1,6 @@
-import {getAverage, getMinimum, getPercentageChange} from 'trading-signals';
+import {getMinimum, getPercentageChange} from 'trading-signals';
 import type {Criterion, Score, ScoreCard} from '@typedtrader/scorecard';
-import {BEAR_RANGE_FLOOR, DISTRIBUTION_MARGIN, UNREAD, measure, type Reading} from './chartHealthChecks.js';
+import {BEAR_RANGE_FLOOR, UNREAD, measure, readVolumeTilt, type Reading} from './chartHealthChecks.js';
 import type {Bar} from './chartHealthReadings.js';
 
 /*
@@ -152,8 +152,7 @@ export function readOpportunity({
     }
   });
 
-  const downVolume = getAverage(downVolumes);
-  const upVolume = getAverage(upVolumes);
+  const tilt = readVolumeTilt(downVolumes, upVolumes);
   const oversoldLow = getMinimum(window.map(bar => bar.rsi));
 
   return {
@@ -179,13 +178,17 @@ export function readOpportunity({
             ],
           },
     /*
-     * Sellers in control show up as weight on the down bars. The same margin the health card allows
-     * before calling it distribution applies here, so the two read one tilt the same way.
+     * Sellers in control show up as weight on the down bars. This is the exact complement of the
+     * weakness card's distribution check, down to the line it compares against, so a window cannot
+     * read as absorbed on one card and sold into on the other.
      */
-    noDistribution: {
-      fired: downVolume <= upVolume * DISTRIBUTION_MARGIN,
-      measures: [measure('Volume', 'down bars vs up bars', downVolume, upVolume * DISTRIBUTION_MARGIN)],
-    },
+    noDistribution:
+      tilt === null
+        ? UNREAD
+        : {
+            fired: tilt.downVolume <= tilt.heavyLine,
+            measures: [measure('Volume', 'down bars vs up bars', tilt.downVolume, tilt.heavyLine)],
+          },
     /*
      * Ranges that widen as price falls are the signature of a disorderly fall, which is the one kind
      * that keeps going. Holding its usual range says the fall was absorbed.

@@ -45,6 +45,12 @@ const firedNames = (names: readonly {fired: boolean | null; name: OpportunityFie
 
 const rising = Array.from({length: 280}, (_, index) => 100 + index * 0.8);
 const falling = [...rising].reverse();
+/*
+ * A fall that rallies every fourth bar, so the window holds bars of both kinds. A straight-line
+ * decline has no up bars at all, which leaves the volume tilt with nothing to compare, and a
+ * fixture that never produces one would let the tilt read as answered when it was not.
+ */
+const fallingWithRallies = falling.map((close, index) => (index % 4 === 0 ? close + 1.2 : close));
 
 describe('ChartHealth opportunity card', () => {
   it('splits the market fall from the instrument fall, which is the question it exists for', () => {
@@ -125,8 +131,16 @@ describe('ChartHealth opportunity card', () => {
     ).toBe(100);
   });
 
+  it('leaves the volume tilt unread where the window holds no bars of one kind', () => {
+    const card = cardFor(dailyCandles(falling), dailyCandles(falling));
+    const tilt = card.criteria.find(field => field.name === 'noDistribution');
+
+    expect(tilt?.fired, 'a straight-line decline has no up bars, so there is no tilt to read').toBeNull();
+    expect(tilt?.measures, 'a field that compared nothing shows no numbers').toHaveLength(0);
+  });
+
   it('leaves the field that needs a second series unread, and says so in the weight', () => {
-    const card = cardFor(dailyCandles(falling));
+    const card = cardFor(dailyCandles(fallingWithRallies));
     const market = card.criteria.find(field => field.name === 'fellWithMarket');
 
     expect(market?.fired, 'with no benchmark there is nothing to answer the question against').toBeNull();
@@ -146,13 +160,20 @@ describe('ChartHealth opportunity card', () => {
 
   it('holds the volume tilt against a fall the sellers drove', () => {
     const heavyOnTheWayDown = cardFor(
-      dailyCandles(falling, down => (down ? 5_000_000 : 800_000)),
+      dailyCandles(fallingWithRallies, down => (down ? 5_000_000 : 800_000)),
       dailyCandles(falling)
     );
 
     expect(
-      firedNames(heavyOnTheWayDown.criteria),
+      heavyOnTheWayDown.criteria.find(field => field.name === 'noDistribution')?.fired,
       'weight on the down bars is sellers in control, whatever the benchmark did'
-    ).not.toContain('noDistribution');
+    ).toBe(false);
+
+    const absorbed = cardFor(dailyCandles(fallingWithRallies), dailyCandles(falling));
+
+    expect(
+      firedNames(absorbed.criteria),
+      'the same fall on even volume was absorbed, which the check has to be able to say'
+    ).toContain('noDistribution');
   });
 });
